@@ -25,11 +25,9 @@ public class WeatherModel {
             weatherModel.mCondition = weatherModel.mCondition.substring(0,1).toUpperCase() + weatherModel.mCondition.substring(1);
             Log.d("Current Weather", "condition is: " + weatherModel.mCondition);
             weatherModel.mIconName = findWeatherIcon(weatherModel.mWeatherCondition);
-
             int roundedTemperature = (int) Math.rint(jsonObject.getJSONObject("main").getDouble("temp") - 273.15);
             weatherModel.mTemperature = Integer.toString(roundedTemperature);
             return weatherModel;
-
         } catch (JSONException e){
             e.printStackTrace();
             return null;
@@ -59,7 +57,6 @@ public class WeatherModel {
         } else if (weatherCondition == 804 || weatherCondition == 805){
             return "brokenclouds";
         }
-
         return "unknown";
     }
 

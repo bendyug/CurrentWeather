@@ -28,8 +28,6 @@ import org.json.JSONObject;
 import cz.msebera.android.httpclient.Header;
 
 public class WeatherDisplay extends AppCompatActivity {
-
-    // Constants:
     final int REQUEST_CODE = 12345;
     final String OPENWEATHER_URL = "http://api.openweathermap.org/data/2.5/weather";
     final String OPENWEATHER_APP_ID = "247a12fa1a27cf32aeea9f6a2d6bd134";
@@ -37,11 +35,13 @@ public class WeatherDisplay extends AppCompatActivity {
     final long MIN_TIME_UPDATES = 10000;
     // Location updates (1km)
     final float MIN_DISTANCE_UPDATES = 1000;
+    final String NETWORK_PROVIDER = LocationManager.NETWORK_PROVIDER;
+    final String CITY_EXTRA = "City";
+    final String Q_REQUEST_PARAM = "q";
+    final String APPID_REQUEST_PARAM = "appid";
+    final String LAT_REQUEST_PARAM = "lat";
+    final String LON_REQUEST_PARAM = "lon";
 
-    String NETWORK_PROVIDER = LocationManager.NETWORK_PROVIDER;
-
-
-    // Member Variables:
     TextView mCityName;
     TextView mTemperature;
     TextView mWind;
@@ -49,7 +49,6 @@ public class WeatherDisplay extends AppCompatActivity {
     ImageView mWeatherIcon;
     ImageButton mChangeCity;
     Button mMyLocationButton;
-
     LocationManager mLocationManager;
     LocationListener mLocationListener;
 
@@ -57,7 +56,6 @@ public class WeatherDisplay extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.weather_display_layout);
-
         mCityName = findViewById(R.id.cityNameTextView);
         mWeatherIcon = findViewById(R.id.weatherIconImageView);
         mWind = findViewById(R.id.windTextView);
@@ -66,7 +64,6 @@ public class WeatherDisplay extends AppCompatActivity {
         mCondition = findViewById(R.id.conditionTextView);
         mMyLocationButton = findViewById(R.id.getCurrentWeatherButton);
         mMyLocationButton.setVisibility(View.INVISIBLE);
-
 
         mMyLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,7 +74,6 @@ public class WeatherDisplay extends AppCompatActivity {
             }
         });
 
-
         mChangeCity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,14 +82,13 @@ public class WeatherDisplay extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 
     @Override
     protected void onResume(){
         super.onResume();
         Intent intent = getIntent();
-        String city = intent.getStringExtra("City");
+        String city = intent.getStringExtra(CITY_EXTRA);
         if (city != null && !city.isEmpty()){
             getWeatherForACertainCity(city);
             mMyLocationButton.setVisibility(View.VISIBLE);
@@ -104,30 +99,25 @@ public class WeatherDisplay extends AppCompatActivity {
 
     private void getWeatherForACertainCity (String city){
         RequestParams requestParams = new RequestParams();
-        requestParams.put("q", city);
-        requestParams.put("appid", OPENWEATHER_APP_ID);
+        requestParams.put(Q_REQUEST_PARAM, city);
+        requestParams.put(APPID_REQUEST_PARAM, OPENWEATHER_APP_ID);
         getWeatherModel(requestParams);
     }
 
-
     private void getWeatherForMyLocation(){
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Log.d("Current Weather", "getWeatherForMyLocation() called ");
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                Log.d("Current Weather", "onLocationChanged() called ");
-                String longitude = String.valueOf(location.getLongitude());
-                String latitude = String.valueOf(location.getLatitude());
-
-                Log.d("Current Weather", "longitude is " + longitude);
-                Log.d("Current Weather", "latitude is " + latitude);
-
-                RequestParams requestParams = new RequestParams();
-                requestParams.put("lat", latitude);
-                requestParams.put("lon", longitude);
-                requestParams.put("appid", OPENWEATHER_APP_ID);
-                getWeatherModel(requestParams);
+                if (!String.valueOf(location.getLongitude()).isEmpty() && !String.valueOf(location.getLatitude()).isEmpty()) {
+                    String longitude = String.valueOf(location.getLongitude());
+                    String latitude = String.valueOf(location.getLatitude());
+                    RequestParams requestParams = new RequestParams();
+                    requestParams.put(LAT_REQUEST_PARAM, latitude);
+                    requestParams.put(LON_REQUEST_PARAM, longitude);
+                    requestParams.put(APPID_REQUEST_PARAM, OPENWEATHER_APP_ID);
+                    getWeatherModel(requestParams);
+                }
             }
 
             @Override
@@ -154,7 +144,6 @@ public class WeatherDisplay extends AppCompatActivity {
         mLocationManager.requestLocationUpdates(NETWORK_PROVIDER, MIN_TIME_UPDATES, MIN_DISTANCE_UPDATES, mLocationListener);
     }
 
-
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
@@ -170,7 +159,6 @@ public class WeatherDisplay extends AppCompatActivity {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject responce){
                 WeatherModel weatherModel = WeatherModel.fromJson(responce);
-                Log.d("Current Weather", "Success. Json: " + responce.toString());
                 updateInterface(weatherModel);
             }
 
@@ -179,28 +167,22 @@ public class WeatherDisplay extends AppCompatActivity {
                 Toast.makeText(WeatherDisplay.this, R.string.toast_failed_request, Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void updateInterface(WeatherModel weatherModel){
         mTemperature.setText(weatherModel.getmTemperature());
         mCityName.setText(weatherModel.getmCity());
-        String wind = String.valueOf(weatherModel.getmWind()) + " m/s";
+        final String wind = String.valueOf(weatherModel.getmWind()) + " m/s";
         mWind.setText(wind);
-        int resourceID = getResources().getIdentifier(weatherModel.getmIconName(), "drawable", getPackageName());
+        final int resourceID = getResources().getIdentifier(weatherModel.getmIconName(), "drawable", getPackageName());
         mWeatherIcon.setImageResource(resourceID);
         mCondition.setText(weatherModel.getmCondition());
-
-
     }
 
     protected void onPause(){
         super.onPause();
-
         if (mLocationManager != null){
             mLocationManager.removeUpdates(mLocationListener);
         }
     }
-
-
 }

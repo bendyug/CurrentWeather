@@ -9,18 +9,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ChangeCityDisplay extends AppCompatActivity {
+    final String CITY_EXTRA = "City";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.change_city_layout);
-
         final EditText editCityTextView = findViewById(R.id.enterCityEditText);
-        ImageButton backImageButton = findViewById(R.id.backImageButton);
-        Button applyButton = findViewById(R.id.applyButton);
+        final ImageButton backImageButton = findViewById(R.id.backImageButton);
+        final Button applyButton = findViewById(R.id.applyButton);
 
         backImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,10 +34,14 @@ public class ChangeCityDisplay extends AppCompatActivity {
         editCityTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                String city = editCityTextView.getText().toString();
-                Intent intent = new Intent(ChangeCityDisplay.this, WeatherDisplay.class);
-                intent.putExtra("City", city);
-                startActivity(intent);
+                final String city = editCityTextView.getText().toString();
+                if (city.isEmpty()){
+                    Toast.makeText(getApplicationContext(), R.string.empty_city_toast, Toast.LENGTH_SHORT).show();
+                } else{
+                    final Intent intent = new Intent(ChangeCityDisplay.this, WeatherDisplay.class);
+                    intent.putExtra(CITY_EXTRA, city);
+                    startActivity(intent);
+                }
                 return false;
             }
         });
@@ -45,14 +49,15 @@ public class ChangeCityDisplay extends AppCompatActivity {
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String city = editCityTextView.getText().toString();
-                Intent intent = new Intent(ChangeCityDisplay.this, WeatherDisplay.class);
-                intent.putExtra("City", city);
-                startActivity(intent);
+                final String city = editCityTextView.getText().toString();
+                if (city.isEmpty()){
+                    Toast.makeText(getApplicationContext(), R.string.empty_city_toast, Toast.LENGTH_SHORT).show();
+                } else {
+                    final Intent intent = new Intent(ChangeCityDisplay.this, WeatherDisplay.class);
+                    intent.putExtra(CITY_EXTRA, city);
+                    startActivity(intent);
+                }
             }
         });
-
-
     }
-
 }
